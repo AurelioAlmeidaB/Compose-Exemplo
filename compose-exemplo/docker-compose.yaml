@@ -1,0 +1,57 @@
+networks:
+  mynet:
+    driver: bridge
+    #ipam:
+      #config:
+      #  - subnet: 172.18.0.0/16
+
+services:
+  web:
+    build: ./web/
+    ports:
+      - "80-81:80"
+    deploy:
+      mode: replicate
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 50M
+    links:
+      - banco:banco
+    volumes:
+     - ./app:/var/www/html
+    networks:
+      mynet:
+       #ipv4_address: 172.18.0.2
+
+  banco:
+    build: ./sql/
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: senha_da_nasa
+      MYSQL_DATABASE: lamp
+      MYSQL_USER: user_lamp
+      MYSQL_PASSWORD: lamp_pass
+    networks:
+      mynet:
+        #ipv4_address: 172.18.0.3
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    deploy:
+    #  mode: replicate
+    #  replicas: 2
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 50M
+    links:
+      - banco:banco
+    networks:
+      mynet:
+        #ipv4_address: 172.18.0.4
